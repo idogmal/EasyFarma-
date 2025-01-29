@@ -1,20 +1,25 @@
 package model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Receita {
     private int id;
     private String paciente;
-    private String medicamento;
+    private String cpf; // Adicionado CPF do paciente
+    private Map<String, Integer> medicamentos; // Nome do medicamento e quantidade
     private String dataPrescricao;
     private boolean validada;
 
-    // Construtor com validação
-    public Receita(int id, String paciente, String medicamento, String dataPrescricao) {
-        if (paciente == null || paciente.isEmpty() || medicamento == null || medicamento.isEmpty() || dataPrescricao == null || dataPrescricao.isEmpty()) {
-            throw new IllegalArgumentException("Paciente, medicamento e data de prescrição são obrigatórios.");
+    // Construtor atualizado
+    public Receita(int id, String paciente, String cpf, Map<String, Integer> medicamentos, String dataPrescricao) {
+        if (paciente == null || paciente.isEmpty() || cpf == null || cpf.isEmpty() || medicamentos == null || medicamentos.isEmpty() || dataPrescricao == null || dataPrescricao.isEmpty()) {
+            throw new IllegalArgumentException("Paciente, CPF, medicamentos e data de prescrição são obrigatórios.");
         }
         this.id = id;
         this.paciente = paciente;
-        this.medicamento = medicamento;
+        this.cpf = cpf; // Inicializando CPF
+        this.medicamentos = new HashMap<>(medicamentos); // Garante uma cópia do mapa para evitar modificações externas
         this.dataPrescricao = dataPrescricao;
         this.validada = false; // Começa como não validada
     }
@@ -33,8 +38,12 @@ public class Receita {
         return paciente;
     }
 
-    public String getMedicamento() {
-        return medicamento;
+    public String getCpf() {
+        return cpf;
+    }
+
+    public Map<String, Integer> getMedicamentos() {
+        return medicamentos;
     }
 
     public String getDataPrescricao() {
@@ -45,13 +54,30 @@ public class Receita {
         return validada;
     }
 
-    // Método toString para exibição
+    // Método para obter os medicamentos como uma String
+    public String getMedicamentosAsString() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Integer> medicamento : medicamentos.entrySet()) {
+            sb.append(medicamento.getKey())
+                    .append(" (")
+                    .append(medicamento.getValue())
+                    .append(" unidades), ");
+        }
+        // Remove a última vírgula e espaço, se existir
+        if (sb.length() > 0) {
+            sb.setLength(sb.length() - 2);
+        }
+        return sb.toString();
+    }
+
+    // Método toString para exibição detalhada
     @Override
     public String toString() {
         return "Receita ID: " + id +
-                ", Paciente: " + paciente +
-                ", Medicamento: " + medicamento +
-                ", Data: " + dataPrescricao +
-                ", Validada: " + (validada ? "Sim" : "Não");
+                "\nPaciente: " + paciente +
+                "\nCPF: " + cpf +
+                "\nData da Prescrição: " + dataPrescricao +
+                "\nMedicamentos: " + getMedicamentosAsString() +
+                "\nValidada: " + (validada ? "Sim" : "Não");
     }
 }

@@ -1,12 +1,14 @@
 package dao;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import model.Estoque;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 public class EstoqueDAO {
     private Estoque estoque;
@@ -29,12 +31,12 @@ public class EstoqueDAO {
         return estoque.consultarEstoque(nome);
     }
 
-    public boolean atualizarEstoque(String nome, int quantidade) {
-        boolean atualizado = estoque.atualizarEstoque(nome, quantidade);
-        if (atualizado) {
+    public boolean diminuirEstoque(String nome, int quantidade) {
+        boolean reduzido = estoque.diminuirEstoque(nome, quantidade);
+        if (reduzido) {
             salvarEstoque();
         }
-        return atualizado;
+        return reduzido;
     }
 
     private void salvarEstoque() {
@@ -56,7 +58,8 @@ public class EstoqueDAO {
 
         try (FileReader reader = new FileReader(file)) {
             Gson gson = new Gson();
-            Estoque estoqueCarregado = gson.fromJson(reader, Estoque.class);
+            Type estoqueType = new TypeToken<Estoque>() {}.getType();
+            Estoque estoqueCarregado = gson.fromJson(reader, estoqueType);
             System.out.println("Estoque carregado com sucesso do arquivo: " + ARQUIVO_ESTOQUE);
             return estoqueCarregado != null ? estoqueCarregado : new Estoque();
         } catch (IOException e) {
