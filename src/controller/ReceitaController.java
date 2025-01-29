@@ -8,9 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ReceitaController {
-    private ReceitaDAO receitaDAO;
-    private EstoqueDAO estoqueDAO;
-    private String dataPrescricao;
+    private final ReceitaDAO receitaDAO;
+    private final EstoqueDAO estoqueDAO;
 
     // Construtor
     public ReceitaController(ReceitaDAO receitaDAO, EstoqueDAO estoqueDAO) {
@@ -19,7 +18,7 @@ public class ReceitaController {
     }
 
     // Cadastrar uma nova receita
-    public void cadastrarReceita(int id, String paciente, String cpf, String medicamentosEntrada) {
+    public void cadastrarReceita(String paciente, String cpf, String crm, String medicamentosEntrada, String dataPrescricao) {
         // Processar os medicamentos inseridos pelo usuário
         Map<String, Integer> medicamentos = processarEntradaMedicamentos(medicamentosEntrada);
 
@@ -27,6 +26,9 @@ public class ReceitaController {
             System.out.println("Erro: Nenhum medicamento válido foi inserido.");
             return;
         }
+
+        // Gerar um ID único para a receita
+        int id = receitaDAO.listarReceitas().size() + 1;
 
         // Criar a receita e salvá-la
         Receita receita = new Receita(id, paciente, cpf, medicamentos, dataPrescricao);
@@ -85,18 +87,8 @@ public class ReceitaController {
         Receita receita = receitaDAO.buscarReceitaPorId(id);
         if (receita != null) {
             receita.validar();
-            receitaDAO.salvarAlteracoes(); // Salvar mudanças no arquivo
+            receitaDAO.salvarAlteracoes();
             System.out.println("Receita validada com sucesso para o paciente: " + receita.getPaciente());
-
-            // Atualizar o estoque, reduzindo a quantidade dos medicamentos
-            receita.getMedicamentos().forEach((medicamento, quantidade) -> {
-                boolean atualizado = estoqueDAO.diminuirEstoque(medicamento, quantidade);
-                if (atualizado) {
-                    System.out.println("Estoque reduzido para " + medicamento + ": " + quantidade + " unidades.");
-                } else {
-                    System.out.println("Erro: Estoque insuficiente para o medicamento: " + medicamento);
-                }
-            });
         } else {
             System.out.println("Receita com ID " + id + " não encontrada.");
         }

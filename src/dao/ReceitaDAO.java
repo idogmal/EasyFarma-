@@ -1,6 +1,7 @@
 package dao;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import model.Receita;
 
@@ -26,7 +27,8 @@ public class ReceitaDAO {
 
     public void adicionarReceita(Receita receita) {
         receitas.add(receita);
-        salvarReceitas();
+        salvarReceitas(); // Garante que a receita será persistida no JSON
+        System.out.println("Receita adicionada: " + receita);
     }
 
     public Receita buscarReceitaPorId(int id) {
@@ -44,7 +46,7 @@ public class ReceitaDAO {
 
     private void salvarReceitas() {
         try (FileWriter writer = new FileWriter(ARQUIVO_RECEITAS)) {
-            Gson gson = new Gson();
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
             gson.toJson(receitas, writer);
             System.out.println("Receitas salvas com sucesso no arquivo: " + ARQUIVO_RECEITAS);
         } catch (IOException e) {
@@ -63,8 +65,13 @@ public class ReceitaDAO {
             Gson gson = new Gson();
             Type listType = new TypeToken<ArrayList<Receita>>() {}.getType();
             List<Receita> receitasCarregadas = gson.fromJson(reader, listType);
-            System.out.println("Receitas carregadas com sucesso do arquivo: " + ARQUIVO_RECEITAS);
-            return receitasCarregadas != null ? receitasCarregadas : new ArrayList<>();
+
+            if (receitasCarregadas != null) {
+                System.out.println("Receitas carregadas com sucesso do arquivo: " + ARQUIVO_RECEITAS);
+                return receitasCarregadas;
+            } else {
+                return new ArrayList<>();
+            }
         } catch (IOException e) {
             System.err.println("Erro ao carregar receitas: " + e.getMessage());
             return new ArrayList<>();
