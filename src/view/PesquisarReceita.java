@@ -18,6 +18,11 @@ import java.util.stream.Collectors;
 public class PesquisarReceita extends Application {
     private TableView<Receita> tabelaReceitas;
     private ObservableList<Receita> listaReceitas;
+    private ReceitaDAO receitaDAO;
+
+    public PesquisarReceita() {
+        this.receitaDAO = new ReceitaDAO();
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -39,7 +44,7 @@ public class PesquisarReceita extends Application {
         colunaPaciente.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPaciente()));
 
         TableColumn<Receita, String> colunaCpf = new TableColumn<>("CPF");
-        colunaCpf.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCpf())); // Ajustar se necessário
+        colunaCpf.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCpf()));
 
         TableColumn<Receita, String> colunaMedicamento = new TableColumn<>("Medicamentos");
         colunaMedicamento.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getMedicamentosAsString()));
@@ -63,7 +68,6 @@ public class PesquisarReceita extends Application {
     }
 
     private void pesquisarReceitas(String nome, String cpf) {
-        ReceitaDAO receitaDAO = new ReceitaDAO();
         List<Receita> receitasFiltradas = receitaDAO.listarReceitas().stream()
                 .filter(r -> (nome.isEmpty() || r.getPaciente().toLowerCase().contains(nome.toLowerCase())) &&
                         (cpf.isEmpty() || r.getCpf().equals(cpf)))

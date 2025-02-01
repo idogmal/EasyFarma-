@@ -1,5 +1,6 @@
 package view;
 
+import controller.ReceitaController;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -10,6 +11,11 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 public class CadastrarReceita extends Application {
+    private final ReceitaController receitaController;
+
+    public CadastrarReceita(ReceitaController receitaController) {
+        this.receitaController = receitaController;
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -32,8 +38,8 @@ public class CadastrarReceita extends Application {
         Label lblCRM = new Label("CRM do Médico:");
         TextField txtCRM = new TextField();
 
-        Label lblMedicamento = new Label("Medicamento:");
-        TextField txtMedicamento = new TextField();
+        Label lblMedicamento = new Label("Medicamentos (Nome Quantidade, Nome Quantidade):");
+        TextField txtMedicamento = new TextField(); // Exemplo: "Ibuprofeno 2, Paracetamol 1"
 
         Label lblDataPrescricao = new Label("Data da Prescrição:");
         DatePicker dpDataPrescricao = new DatePicker();
@@ -44,25 +50,24 @@ public class CadastrarReceita extends Application {
 
         // Ações dos botões
         btnCadastrar.setOnAction(e -> {
-            // Captura os valores dos campos
             String paciente = txtPaciente.getText().trim();
             String cpf = txtCPF.getText().trim();
             String crm = txtCRM.getText().trim();
-            String medicamento = txtMedicamento.getText().trim();
+            String medicamentosEntrada = txtMedicamento.getText().trim(); // Captura os medicamentos como String
             String dataPrescricao = (dpDataPrescricao.getValue() != null) ? dpDataPrescricao.getValue().toString() : "";
 
-            // Validação simples
-            if (paciente.isEmpty() || cpf.isEmpty() || crm.isEmpty() || medicamento.isEmpty() || dataPrescricao.isEmpty()) {
+            if (paciente.isEmpty() || cpf.isEmpty() || crm.isEmpty() || medicamentosEntrada.isEmpty() || dataPrescricao.isEmpty()) {
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Todos os campos são obrigatórios!", ButtonType.OK);
                 alert.showAndWait();
                 return;
             }
 
-            // Simulação de cadastro
+            // Chamar o método do controlador para cadastrar a receita
+            receitaController.cadastrarReceita(paciente, cpf, crm, medicamentosEntrada, dataPrescricao);
+
             Alert alert = new Alert(Alert.AlertType.INFORMATION, "Receita cadastrada com sucesso!", ButtonType.OK);
             alert.showAndWait();
 
-            // Fecha a janela após o cadastro
             primaryStage.close();
         });
 
@@ -85,12 +90,8 @@ public class CadastrarReceita extends Application {
         grid.add(buttonBox, 0, 5, 2, 1);
 
         // Cena
-        Scene scene = new Scene(grid, 400, 300);
+        Scene scene = new Scene(grid, 500, 300);
         primaryStage.setScene(scene);
         primaryStage.show();
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }

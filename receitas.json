@@ -1,1 +1,40 @@
-[{"id":1,"paciente":"João Silva","medicamento":"Paracetamol","dataPrescricao":"30/01/2025","validada":false},{"id":2,"paciente":"Ana Souza","medicamento":"Ibuprofeno","dataPrescricao":"28/01/2025","validada":true},{"id":10,"paciente":"Nicolas","medicamento":"ibuprofeno","dataPrescricao":"26/01/2024","validada":true},{"id":50,"paciente":"Teste","medicamento":"Tilenol","dataPrescricao":"20/01/2025","validada":false}]
+[
+  {
+    "id": 1,
+    "paciente": "João Silva",
+    "medicamentos": {},
+    "dataPrescricao": "30/01/2025",
+    "validada": false
+  },
+  {
+    "id": 2,
+    "paciente": "Ana Souza",
+    "medicamentos": {},
+    "dataPrescricao": "28/01/2025",
+    "validada": true
+  },
+  {
+    "id": 10,
+    "paciente": "Nicolas",
+    "medicamentos": {},
+    "dataPrescricao": "26/01/2024",
+    "validada": true
+  },
+  {
+    "id": 50,
+    "paciente": "Teste",
+    "medicamentos": {},
+    "dataPrescricao": "20/01/2025",
+    "validada": false
+  },
+  {
+    "id": 5,
+    "paciente": "teste123",
+    "cpf": "teste123",
+    "medicamentos": {
+      "ibuprofeno": 2
+    },
+    "dataPrescricao": "2025-02-01",
+    "validada": false
+  }
+]

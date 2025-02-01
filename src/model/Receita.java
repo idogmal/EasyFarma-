@@ -6,8 +6,8 @@ import java.util.Map;
 public class Receita {
     private int id;
     private String paciente;
-    private String cpf; // Adicionado CPF do paciente
-    private Map<String, Integer> medicamentos; // Nome do medicamento e quantidade
+    private String cpf;
+    private Map<String, Integer> medicamentos;
     private String dataPrescricao;
     private boolean validada;
 
@@ -18,13 +18,17 @@ public class Receita {
         }
         this.id = id;
         this.paciente = paciente;
-        this.cpf = cpf; // Inicializando CPF
-        this.medicamentos = new HashMap<>(medicamentos); // Garante uma cópia do mapa para evitar modificações externas
+        this.cpf = cpf;
+        this.medicamentos = new HashMap<>(medicamentos);
         this.dataPrescricao = dataPrescricao;
-        this.validada = false; // Começa como não validada
+        this.validada = false;
     }
 
-    // Método para validar a receita
+    // Construtor sem argumentos para desserialização do JSON
+    public Receita() {
+        this.medicamentos = new HashMap<>();
+    }
+
     public void validar() {
         this.validada = true;
     }
@@ -43,7 +47,14 @@ public class Receita {
     }
 
     public Map<String, Integer> getMedicamentos() {
+        if (medicamentos == null) {
+            medicamentos = new HashMap<>();
+        }
         return medicamentos;
+    }
+
+    public void setMedicamentos(Map<String, Integer> medicamentos) {
+        this.medicamentos = (medicamentos != null) ? new HashMap<>(medicamentos) : new HashMap<>();
     }
 
     public String getDataPrescricao() {
@@ -54,23 +65,22 @@ public class Receita {
         return validada;
     }
 
-    // Método para obter os medicamentos como uma String
     public String getMedicamentosAsString() {
+        if (medicamentos == null || medicamentos.isEmpty()) {
+            return "Nenhum medicamento cadastrado.";
+        }
+
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, Integer> medicamento : medicamentos.entrySet()) {
-            sb.append(medicamento.getKey())
-                    .append(" (")
-                    .append(medicamento.getValue())
-                    .append(" unidades), ");
+            sb.append(medicamento.getKey()).append(" (").append(medicamento.getValue()).append(" unidades), ");
         }
-        // Remove a última vírgula e espaço, se existir
+
         if (sb.length() > 0) {
             sb.setLength(sb.length() - 2);
         }
         return sb.toString();
     }
 
-    // Método toString para exibição detalhada
     @Override
     public String toString() {
         return "Receita ID: " + id +

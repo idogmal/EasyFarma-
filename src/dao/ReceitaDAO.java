@@ -1,16 +1,15 @@
 package dao;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import model.Receita;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap; // 🔹 Adicionado import do HashMap
 
 public class ReceitaDAO {
     private List<Receita> receitas;
@@ -30,12 +29,10 @@ public class ReceitaDAO {
     }
 
     public Receita buscarReceitaPorId(int id) {
-        for (Receita receita : receitas) {
-            if (receita.getId() == id) {
-                return receita;
-            }
-        }
-        return null; // Retorna null caso a receita não seja encontrada
+        return receitas.stream()
+                .filter(receita -> receita.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     public void salvarAlteracoes() {
@@ -44,7 +41,7 @@ public class ReceitaDAO {
 
     private void salvarReceitas() {
         try (FileWriter writer = new FileWriter(ARQUIVO_RECEITAS)) {
-            Gson gson = new Gson();
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
             gson.toJson(receitas, writer);
             System.out.println("Receitas salvas com sucesso no arquivo: " + ARQUIVO_RECEITAS);
         } catch (IOException e) {
@@ -63,6 +60,16 @@ public class ReceitaDAO {
             Gson gson = new Gson();
             Type listType = new TypeToken<ArrayList<Receita>>() {}.getType();
             List<Receita> receitasCarregadas = gson.fromJson(reader, listType);
+
+            // Garantir que todas as receitas carregadas tenham medicamentos inicializados corretamente
+            if (receitasCarregadas != null) {
+                for (Receita receita : receitasCarregadas) {
+                    if (receita.getMedicamentos() == null) {
+                        receita.setMedicamentos(new HashMap<>()); // 🔹 Corrigido erro do HashMap
+                    }
+                }
+            }
+
             System.out.println("Receitas carregadas com sucesso do arquivo: " + ARQUIVO_RECEITAS);
             return receitasCarregadas != null ? receitasCarregadas : new ArrayList<>();
         } catch (IOException e) {

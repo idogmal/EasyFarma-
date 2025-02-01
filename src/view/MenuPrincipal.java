@@ -1,5 +1,6 @@
 package view;
 
+import controller.ReceitaController;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -8,6 +9,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class MenuPrincipal extends Application {
+    private final ReceitaController receitaController;
+
+    public MenuPrincipal(ReceitaController receitaController) {
+        this.receitaController = receitaController;
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -26,8 +32,8 @@ public class MenuPrincipal extends Application {
         btnSair.setPrefWidth(200);
 
         // Eventos dos botões
-        btnCadastrarReceita.setOnAction(e -> new CadastrarReceita().start(new Stage()));
-        btnPesquisarReceita.setOnAction(e -> new PesquisarReceita().start(new Stage()));
+        btnCadastrarReceita.setOnAction(e -> new CadastrarReceita(receitaController).start(new Stage()));
+        btnPesquisarReceita.setOnAction(e -> new PesquisarReceita().start(new Stage())); // Corrigido: Removido o argumento
         btnVisualizarEstoque.setOnAction(e -> visualizarEstoque());
         btnSair.setOnAction(e -> primaryStage.close());
 
@@ -44,9 +50,5 @@ public class MenuPrincipal extends Application {
 
     private void visualizarEstoque() {
         System.out.println("Função de visualizar estoque ainda não implementada.");
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }
