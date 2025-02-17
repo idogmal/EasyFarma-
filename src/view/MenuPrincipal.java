@@ -49,6 +49,13 @@ public class MenuPrincipal extends Application {
     }
 
     private void visualizarEstoque() {
-        System.out.println("Função de visualizar estoque ainda não implementada.");
+        VisualizarEstoqueView estoqueView = new VisualizarEstoqueView();
+        Stage stage = new Stage();
+        try {
+            estoqueView.start(stage);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Opcional: exibir um alerta para o usuário em caso de erro
+        }
     }
 }

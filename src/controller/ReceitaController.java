@@ -40,12 +40,17 @@ public class ReceitaController {
         receitaDAO.adicionarReceita(receita);
         System.out.println("Receita cadastrada com sucesso! ID: " + id);
 
-        // Atualizar o estoque com os medicamentos da receita
+        // Atualizar o estoque com os medicamentos da receita, diminuindo a quantidade
         medicamentos.forEach((medicamento, quantidade) -> {
-            estoqueDAO.adicionarMedicamento(medicamento, quantidade);
-            System.out.println("Estoque atualizado: " + medicamento + " (" + quantidade + " unidades adicionadas)");
+            boolean sucesso = estoqueDAO.diminuirEstoque(medicamento, quantidade);
+            if (sucesso) {
+                System.out.println("Estoque atualizado: " + medicamento + " (" + quantidade + " unidades subtraídas)");
+            } else {
+                System.out.println("Estoque insuficiente para: " + medicamento);
+            }
         });
     }
+
 
     // Processar a entrada de medicamentos e convertê-los para um Map<String, Integer>
     private Map<String, Integer> processarEntradaMedicamentos(String entrada) {

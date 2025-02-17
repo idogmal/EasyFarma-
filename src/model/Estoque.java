@@ -1,6 +1,7 @@
 package model;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class Estoque {
     private HashMap<String, Integer> medicamentos;
@@ -35,7 +36,6 @@ public class Estoque {
         return false; // Estoque insuficiente
     }
 
-
     // Consultar quantidade disponível de um medicamento
     public int consultarEstoque(String nome) {
         if (nome == null || nome.isEmpty()) {
@@ -56,6 +56,11 @@ public class Estoque {
                     System.out.println("Medicamento: " + nome + ", Quantidade: " + quantidade)
             );
         }
+    }
+
+    // Novo método getter para retornar o HashMap de medicamentos
+    public Map<String, Integer> getMedicamentos() {
+        return medicamentos;
     }
 
     @Override

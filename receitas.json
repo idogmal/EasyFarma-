@@ -36,5 +36,48 @@
     },
     "dataPrescricao": "2025-02-01",
     "validada": false
+  },
+  {
+    "id": 6,
+    "paciente": "Nayanna",
+    "cpf": "02302302",
+    "medicamentos": {
+      "ibuprofeno": 3,
+      "tilenol": 5
+    },
+    "dataPrescricao": "2025-02-17",
+    "validada": false
+  },
+  {
+    "id": 7,
+    "paciente": "Monica",
+    "cpf": "1058889997",
+    "medicamentos": {
+      "tilenol": 15
+    },
+    "dataPrescricao": "2025-02-17",
+    "validada": false
+  },
+  {
+    "id": 8,
+    "paciente": "Eduarda",
+    "cpf": "9876542322",
+    "medicamentos": {
+      "ibuprofeno": 4,
+      "tilenol": 1
+    },
+    "dataPrescricao": "2025-02-17",
+    "validada": false
+  },
+  {
+    "id": 9,
+    "paciente": "Thiago",
+    "cpf": "8877884534",
+    "medicamentos": {
+      "ibuprofeno": 2,
+      "tilenol": 1
+    },
+    "dataPrescricao": "2025-02-05",
+    "validada": false
   }
 ]
