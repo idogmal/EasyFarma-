@@ -13,7 +13,10 @@ public class Receita {
 
     // Construtor atualizado
     public Receita(int id, String paciente, String cpf, Map<String, Integer> medicamentos, String dataPrescricao) {
-        if (paciente == null || paciente.isEmpty() || cpf == null || cpf.isEmpty() || medicamentos == null || medicamentos.isEmpty() || dataPrescricao == null || dataPrescricao.isEmpty()) {
+        if (paciente == null || paciente.isEmpty() ||
+                cpf == null || cpf.isEmpty() ||
+                medicamentos == null || medicamentos.isEmpty() ||
+                dataPrescricao == null || dataPrescricao.isEmpty()) {
             throw new IllegalArgumentException("Paciente, CPF, medicamentos e data de prescrição são obrigatórios.");
         }
         this.id = id;
@@ -29,6 +32,7 @@ public class Receita {
         this.medicamentos = new HashMap<>();
     }
 
+    // Método para validar a receita
     public void validar() {
         this.validada = true;
     }
@@ -65,16 +69,28 @@ public class Receita {
         return validada;
     }
 
+    // Novo getter que retorna o status da receita como String
+    public String getStatus() {
+        return validada ? "Validada" : "Pendente";
+    }
+
+    // Novo setter para atualizar o status da receita
+    public void setStatus(String status) {
+        this.validada = "Validada".equalsIgnoreCase(status);
+    }
+
+    // Método para converter o mapa de medicamentos em uma String legível
     public String getMedicamentosAsString() {
         if (medicamentos == null || medicamentos.isEmpty()) {
             return "Nenhum medicamento cadastrado.";
         }
-
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, Integer> medicamento : medicamentos.entrySet()) {
-            sb.append(medicamento.getKey()).append(" (").append(medicamento.getValue()).append(" unidades), ");
+            sb.append(medicamento.getKey())
+                    .append(" (")
+                    .append(medicamento.getValue())
+                    .append(" unidades), ");
         }
-
         if (sb.length() > 0) {
             sb.setLength(sb.length() - 2);
         }

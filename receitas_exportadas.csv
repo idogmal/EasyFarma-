@@ -1,0 +1,10 @@
+ID,Paciente,CPF,DataPrescricao,Status,Medicamentos
+1,João Silva,null,30/01/2025,Pendente,Nenhum medicamento cadastrado.
+2,Ana Souza,null,28/01/2025,Validada,Nenhum medicamento cadastrado.
+10,Nicolas,null,26/01/2024,Validada,Nenhum medicamento cadastrado.
+50,Teste,null,20/01/2025,Validada,Nenhum medicamento cadastrado.
+5,teste123,teste123,2025-02-01,Pendente,ibuprofeno (2 unidades)
+6,Nayanna,02302302,2025-02-17,Pendente,ibuprofeno (3 unidades), tilenol (5 unidades)
+7,Monica,1058889997,2025-02-17,Pendente,tilenol (15 unidades)
+8,Eduarda,9876542322,2025-02-17,Pendente,ibuprofeno (4 unidades), tilenol (1 unidades)
+9,Thiago,8877884534,2025-02-05,Pendente,ibuprofeno (2 unidades), tilenol (1 unidades)

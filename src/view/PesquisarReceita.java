@@ -11,70 +11,100 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.Receita;
 import javafx.beans.property.SimpleStringProperty;
+import util.ExportadorReceitas;
+import javafx.stage.FileChooser;
+import java.io.File;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class PesquisarReceita extends Application {
-    private TableView<Receita> tabelaReceitas;
-    private ObservableList<Receita> listaReceitas;
-    private ReceitaDAO receitaDAO;
 
-    public PesquisarReceita() {
-        this.receitaDAO = new ReceitaDAO();
-    }
+    private TableView<Receita> table;
+    private ObservableList<Receita> data;
+    private ReceitaDAO receitaDAO = new ReceitaDAO();
 
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Pesquisar Receita");
 
         // Campos de pesquisa
-        TextField txtNomePaciente = new TextField();
-        txtNomePaciente.setPromptText("Nome do Paciente");
-
-        TextField txtCpfPaciente = new TextField();
-        txtCpfPaciente.setPromptText("CPF do Paciente");
+        TextField txtNome = new TextField();
+        txtNome.setPromptText("Nome do Paciente");
+        TextField txtCpf = new TextField();
+        txtCpf.setPromptText("CPF do Paciente");
 
         Button btnPesquisar = new Button("Pesquisar");
-        tabelaReceitas = new TableView<>();
-        listaReceitas = FXCollections.observableArrayList();
+        Button btnExportar = new Button("Exportar Receitas"); // Novo botão para exportação
 
-        // Definir colunas da tabela
-        TableColumn<Receita, String> colunaPaciente = new TableColumn<>("Paciente");
-        colunaPaciente.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPaciente()));
+        // Inicializa a tabela e a lista observável
+        table = new TableView<>();
+        data = FXCollections.observableArrayList();
 
-        TableColumn<Receita, String> colunaCpf = new TableColumn<>("CPF");
-        colunaCpf.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCpf()));
+        // Define as colunas da tabela
+        TableColumn<Receita, String> colPaciente = new TableColumn<>("Paciente");
+        colPaciente.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPaciente()));
 
-        TableColumn<Receita, String> colunaMedicamento = new TableColumn<>("Medicamentos");
-        colunaMedicamento.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getMedicamentosAsString()));
+        TableColumn<Receita, String> colCpf = new TableColumn<>("CPF");
+        colCpf.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCpf()));
 
-        TableColumn<Receita, String> colunaData = new TableColumn<>("Data da Prescrição");
-        colunaData.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDataPrescricao()));
+        TableColumn<Receita, String> colMedicamentos = new TableColumn<>("Medicamentos");
+        colMedicamentos.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getMedicamentosAsString()));
 
-        tabelaReceitas.getColumns().addAll(colunaPaciente, colunaCpf, colunaMedicamento, colunaData);
+        TableColumn<Receita, String> colData = new TableColumn<>("Data");
+        colData.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDataPrescricao()));
+
+        TableColumn<Receita, String> colStatus = new TableColumn<>("Status");
+        colStatus.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getStatus()));
+
+        table.getColumns().addAll(colPaciente, colCpf, colMedicamentos, colData, colStatus);
 
         // Evento de pesquisa
-        btnPesquisar.setOnAction(e -> pesquisarReceitas(txtNomePaciente.getText().trim(), txtCpfPaciente.getText().trim()));
+        btnPesquisar.setOnAction(e -> pesquisar(txtNome.getText().trim(), txtCpf.getText().trim()));
 
-        // Layout
-        VBox layout = new VBox(10);
-        layout.getChildren().addAll(txtNomePaciente, txtCpfPaciente, btnPesquisar, tabelaReceitas);
-        layout.setAlignment(Pos.CENTER);
+        // Evento do botão "Exportar Receitas"
+        btnExportar.setOnAction(e -> {
+            // Obtém a janela atual a partir da tabela
+            Stage stage = (Stage) table.getScene().getWindow();
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Salvar Receitas como CSV");
+            // Adiciona filtro para arquivos CSV
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+            // Abre o diálogo para salvar e obtém o arquivo selecionado
+            File file = fileChooser.showSaveDialog(stage);
+            if (file != null) {
+                // Exporta as receitas para o caminho escolhido
+                ExportadorReceitas.exportarReceitasCSV(data, file.getAbsolutePath());
+                showAlert("Exportação concluída para o arquivo: " + file.getAbsolutePath());
+            }
+        });
+        VBox root = new VBox(10, txtNome, txtCpf, btnPesquisar, btnExportar, table);
+        root.setAlignment(Pos.CENTER);
 
-        Scene scene = new Scene(layout, 600, 400);
+        Scene scene = new Scene(root, 600, 500);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    private void pesquisarReceitas(String nome, String cpf) {
-        List<Receita> receitasFiltradas = receitaDAO.listarReceitas().stream()
+    /**
+     * Filtra a lista de receitas com base no nome e CPF fornecidos.
+     */
+    private void pesquisar(String nome, String cpf) {
+        List<Receita> filtered = receitaDAO.listarReceitas().stream()
                 .filter(r -> (nome.isEmpty() || r.getPaciente().toLowerCase().contains(nome.toLowerCase())) &&
-                        (cpf.isEmpty() || r.getCpf().equals(cpf)))
+                        (cpf.isEmpty() || cpf.equals(r.getCpf())))
                 .collect(Collectors.toList());
+        data.setAll(filtered);
+        table.setItems(data);
+    }
 
-        listaReceitas.setAll(receitasFiltradas);
-        tabelaReceitas.setItems(listaReceitas);
+    /**
+     * Exibe um alerta com a mensagem informada.
+     */
+    private void showAlert(String mensagem) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, mensagem, ButtonType.OK);
+        alert.showAndWait();
     }
 
     public static void main(String[] args) {

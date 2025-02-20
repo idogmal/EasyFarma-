@@ -8,8 +8,8 @@ import model.Receita;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.HashMap; // 🔹 Adicionado import do HashMap
 
 public class ReceitaDAO {
     private List<Receita> receitas;
@@ -19,15 +19,18 @@ public class ReceitaDAO {
         this.receitas = carregarReceitas();
     }
 
+    // Retorna a lista de receitas carregadas
     public List<Receita> listarReceitas() {
         return receitas;
     }
 
+    // Adiciona uma nova receita e persiste a alteração
     public void adicionarReceita(Receita receita) {
         receitas.add(receita);
         salvarReceitas();
     }
 
+    // Busca uma receita pelo seu ID
     public Receita buscarReceitaPorId(int id) {
         return receitas.stream()
                 .filter(receita -> receita.getId() == id)
@@ -35,10 +38,12 @@ public class ReceitaDAO {
                 .orElse(null);
     }
 
-    public void salvarAlteracoes() {
+    // Atualiza as receitas persistidas (salva todas as receitas)
+    public void atualizarReceitas() {
         salvarReceitas();
     }
 
+    // Método privado para salvar a lista de receitas no arquivo JSON
     private void salvarReceitas() {
         try (FileWriter writer = new FileWriter(ARQUIVO_RECEITAS)) {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -49,27 +54,25 @@ public class ReceitaDAO {
         }
     }
 
+    // Método privado para carregar a lista de receitas do arquivo JSON
     private List<Receita> carregarReceitas() {
         File file = new File(ARQUIVO_RECEITAS);
         if (!file.exists()) {
             System.out.println("Arquivo " + ARQUIVO_RECEITAS + " não encontrado. Iniciando com lista vazia.");
             return new ArrayList<>();
         }
-
         try (FileReader reader = new FileReader(file)) {
             Gson gson = new Gson();
             Type listType = new TypeToken<ArrayList<Receita>>() {}.getType();
             List<Receita> receitasCarregadas = gson.fromJson(reader, listType);
-
-            // Garantir que todas as receitas carregadas tenham medicamentos inicializados corretamente
+            // Garantir que todas as receitas carregadas tenham o mapa de medicamentos inicializado corretamente
             if (receitasCarregadas != null) {
                 for (Receita receita : receitasCarregadas) {
                     if (receita.getMedicamentos() == null) {
-                        receita.setMedicamentos(new HashMap<>()); // 🔹 Corrigido erro do HashMap
+                        receita.setMedicamentos(new HashMap<>());
                     }
                 }
             }
-
             System.out.println("Receitas carregadas com sucesso do arquivo: " + ARQUIVO_RECEITAS);
             return receitasCarregadas != null ? receitasCarregadas : new ArrayList<>();
         } catch (IOException e) {

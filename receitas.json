@@ -25,7 +25,7 @@
     "paciente": "Teste",
     "medicamentos": {},
     "dataPrescricao": "20/01/2025",
-    "validada": false
+    "validada": true
   },
   {
     "id": 5,
