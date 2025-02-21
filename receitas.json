@@ -35,7 +35,7 @@
       "ibuprofeno": 2
     },
     "dataPrescricao": "2025-02-01",
-    "validada": false
+    "validada": true
   },
   {
     "id": 6,
@@ -78,6 +78,16 @@
       "tilenol": 1
     },
     "dataPrescricao": "2025-02-05",
+    "validada": false
+  },
+  {
+    "id": 10,
+    "paciente": "Tarciso",
+    "cpf": "999888223",
+    "medicamentos": {
+      "tilenol": 1
+    },
+    "dataPrescricao": "2025-02-20",
     "validada": false
   }
 ]

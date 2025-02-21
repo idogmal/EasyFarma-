@@ -9,7 +9,7 @@ import java.util.List;
 public class ExportadorReceitas {
 
     /**
-     * Exporta a lista de receitas para um arquivo CSV utilizando ponto e vírgula como delimitador.
+     * Exporta a lista de receitas para um arquivo CSV utilizando ponto e vírgula como seprador.
      * Inclui o BOM para UTF-8 para que o Excel interprete os acentos corretamente.
      *
      * @param receitas     Lista de receitas a serem exportadas.

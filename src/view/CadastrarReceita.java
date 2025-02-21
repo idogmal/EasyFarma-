@@ -6,9 +6,11 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import java.time.LocalDate;
 
 public class CadastrarReceita extends Application {
     private final ReceitaController receitaController;
@@ -19,42 +21,88 @@ public class CadastrarReceita extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Cadastrar Receita");
+        primaryStage.setTitle("EasyFarma - Cadastrar Receita");
 
-        // Layout principal
-        GridPane grid = new GridPane();
-        grid.setAlignment(Pos.CENTER);
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 20, 20, 20));
+        // ===================== MENU LATERAL (verde) =====================
+        VBox menuLateral = new VBox(15);
+        menuLateral.setPadding(new Insets(20));
+        menuLateral.setStyle("-fx-background-color: #2E7D32;");
+        menuLateral.setPrefWidth(180);
 
-        // Campos de entrada
-        Label lblPaciente = new Label("Nome do Paciente:");
-        TextField txtPaciente = new TextField();
+        // Botões do menu lateral com navegação:
+        Button btnPesquisarReceita = criarBotaoMenu("Pesquisar Receita", () -> {
+            new PesquisarReceita().start(new Stage());
+            primaryStage.close();
+        });
+        Button btnEstoque = criarBotaoMenu("Estoque", () -> {
+            new VisualizarEstoqueView().start(new Stage());
+            primaryStage.close();
+        });
+        Button btnSair = criarBotaoMenu("Sair", () -> {
+            primaryStage.close();
+        });
+        // Adiciona os botões na ordem desejada (Sair fica no final)
+        menuLateral.getChildren().addAll(btnPesquisarReceita, btnEstoque, btnSair);
 
-        Label lblCPF = new Label("CPF do Paciente:");
-        TextField txtCPF = new TextField();
+        // ===================== CONTEÚDO CENTRAL (FORMULÁRIO) =====================
+        VBox conteudoCentral = new VBox(20);
+        conteudoCentral.setPadding(new Insets(30));
+        conteudoCentral.setAlignment(Pos.TOP_CENTER);
 
-        Label lblCRM = new Label("CRM do Médico:");
-        TextField txtCRM = new TextField();
+        Label lblTitulo = new Label("Cadastro de Receita");
+        lblTitulo.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
 
-        Label lblMedicamento = new Label("Medicamentos (Nome Quantidade, Nome Quantidade):");
-        TextField txtMedicamento = new TextField(); // Exemplo: "Ibuprofeno 2, Paracetamol 1"
+        // Cada campo é um VBox com rótulo acima do campo de entrada:
+        VBox campoPaciente = criarCampo("Nome do Paciente:", new TextField());
+        VBox campoCPF = criarCampo("CPF do Paciente:", new TextField());
+        VBox campoCRM = criarCampo("CRM do Médico:", new TextField());
+        VBox campoMedicamento = criarCampo("Medicamentos (Nome Quantidade, ...):", new TextField());
+        VBox campoData = criarCampo("Data da Prescrição:", new DatePicker());
 
-        Label lblDataPrescricao = new Label("Data da Prescrição:");
-        DatePicker dpDataPrescricao = new DatePicker();
-
-        // Botões
+        // Botões do formulário
         Button btnCadastrar = new Button("Cadastrar");
+        btnCadastrar.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnCadastrar.setPrefWidth(100);
         Button btnCancelar = new Button("Cancelar");
+        btnCancelar.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnCancelar.setPrefWidth(100);
+        HBox buttonBox = new HBox(15, btnCadastrar, btnCancelar);
+        buttonBox.setAlignment(Pos.CENTER);
 
-        // Ações dos botões
+        VBox formulario = new VBox(15, campoPaciente, campoCPF, campoCRM, campoMedicamento, campoData, buttonBox);
+        formulario.setMaxWidth(400);
+        formulario.setAlignment(Pos.CENTER_LEFT);
+        conteudoCentral.getChildren().addAll(lblTitulo, formulario);
+
+        // ===================== LOGO NO RODAPÉ (inferior direito) =====================
+        ImageView logoView = null;
+        try {
+            Image logo = new Image(getClass().getResourceAsStream("/logo.png"));
+            logoView = new ImageView(logo);
+            logoView.setFitHeight(50);
+            logoView.setPreserveRatio(true);
+        } catch(Exception ex) {
+            System.err.println("Logo não encontrada!");
+        }
+        HBox bottomBar = new HBox();
+        bottomBar.setPadding(new Insets(10));
+        bottomBar.setAlignment(Pos.BOTTOM_RIGHT);
+        if (logoView != null) {
+            bottomBar.getChildren().add(logoView);
+        }
+
+        // ===================== AÇÃO DOS BOTÕES DO FORMULÁRIO =====================
         btnCadastrar.setOnAction(e -> {
+            TextField txtPaciente = (TextField) campoPaciente.getChildren().get(1);
+            TextField txtCPF = (TextField) campoCPF.getChildren().get(1);
+            TextField txtCRM = (TextField) campoCRM.getChildren().get(1);
+            TextField txtMedicamento = (TextField) campoMedicamento.getChildren().get(1);
+            DatePicker dpData = (DatePicker) campoData.getChildren().get(1);
             String paciente = txtPaciente.getText().trim();
             String cpf = txtCPF.getText().trim();
             String crm = txtCRM.getText().trim();
-            String medicamentosEntrada = txtMedicamento.getText().trim(); // Captura os medicamentos como String
-            String dataPrescricao = (dpDataPrescricao.getValue() != null) ? dpDataPrescricao.getValue().toString() : "";
+            String medicamentosEntrada = txtMedicamento.getText().trim();
+            String dataPrescricao = (dpData.getValue() != null) ? dpData.getValue().toString() : "";
 
             if (paciente.isEmpty() || cpf.isEmpty() || crm.isEmpty() || medicamentosEntrada.isEmpty() || dataPrescricao.isEmpty()) {
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Todos os campos são obrigatórios!", ButtonType.OK);
@@ -62,36 +110,39 @@ public class CadastrarReceita extends Application {
                 return;
             }
 
-            // Chamar o método do controlador para cadastrar a receita
             receitaController.cadastrarReceita(paciente, cpf, crm, medicamentosEntrada, dataPrescricao);
-
             Alert alert = new Alert(Alert.AlertType.INFORMATION, "Receita cadastrada com sucesso!", ButtonType.OK);
             alert.showAndWait();
-
             primaryStage.close();
         });
-
         btnCancelar.setOnAction(e -> primaryStage.close());
 
-        // Adicionar elementos ao grid
-        grid.add(lblPaciente, 0, 0);
-        grid.add(txtPaciente, 1, 0);
-        grid.add(lblCPF, 0, 1);
-        grid.add(txtCPF, 1, 1);
-        grid.add(lblCRM, 0, 2);
-        grid.add(txtCRM, 1, 2);
-        grid.add(lblMedicamento, 0, 3);
-        grid.add(txtMedicamento, 1, 3);
-        grid.add(lblDataPrescricao, 0, 4);
-        grid.add(dpDataPrescricao, 1, 4);
+        // ===================== LAYOUT PRINCIPAL (BorderPane) =====================
+        BorderPane root = new BorderPane();
+        root.setLeft(menuLateral);
+        root.setCenter(conteudoCentral);
+        root.setBottom(bottomBar);
 
-        HBox buttonBox = new HBox(10, btnCadastrar, btnCancelar);
-        buttonBox.setAlignment(Pos.CENTER);
-        grid.add(buttonBox, 0, 5, 2, 1);
-
-        // Cena
-        Scene scene = new Scene(grid, 500, 300);
+        Scene scene = new Scene(root, 900, 600);
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    private VBox criarCampo(String labelText, Control input) {
+        Label label = new Label(labelText);
+        label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        return new VBox(5, label, input);
+    }
+
+    private Button criarBotaoMenu(String texto, Runnable acao) {
+        Button btn = new Button(texto);
+        btn.setMaxWidth(Double.MAX_VALUE);
+        btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16px;");
+        btn.setOnAction(e -> acao.run());
+        return btn;
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }

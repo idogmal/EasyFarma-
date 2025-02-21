@@ -14,6 +14,10 @@ import javafx.stage.Stage;
 import java.util.Map;
 
 public class Login extends Application {
+    // Variáveis estáticas para armazenar os dados do usuário logado
+    public static String usuarioLogado;
+    public static String senhaLogada;
+
     // Mapa de usuários persistentes
     private Map<String, String> usuarios;
     private final ReceitaController receitaController;
@@ -58,6 +62,10 @@ public class Login extends Application {
             String senha = txtSenha.getText().trim();
 
             if (usuarios.containsKey(usuario) && usuarios.get(usuario).equals(senha)) {
+                // Armazena os dados do usuário logado
+                Login.usuarioLogado = usuario;
+                Login.senhaLogada = senha;
+
                 lblMensagem.setText("Login bem-sucedido!");
                 new MenuPrincipal(receitaController).start(new Stage());
                 primaryStage.close();
