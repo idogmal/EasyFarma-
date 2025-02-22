@@ -29,7 +29,8 @@ public class CadastrarReceita extends Application {
         menuLateral.setStyle("-fx-background-color: #2E7D32;");
         menuLateral.setPrefWidth(180);
 
-        // Botões do menu lateral com navegação:
+        Button btnCadastrarReceita = criarBotaoMenu("Cadastrar Receita", () -> {});
+        btnCadastrarReceita.setDisable(true);  // Tela atual
         Button btnPesquisarReceita = criarBotaoMenu("Pesquisar Receita", () -> {
             new PesquisarReceita().start(new Stage());
             primaryStage.close();
@@ -38,11 +39,8 @@ public class CadastrarReceita extends Application {
             new VisualizarEstoqueView().start(new Stage());
             primaryStage.close();
         });
-        Button btnSair = criarBotaoMenu("Sair", () -> {
-            primaryStage.close();
-        });
-        // Adiciona os botões na ordem desejada (Sair fica no final)
-        menuLateral.getChildren().addAll(btnPesquisarReceita, btnEstoque, btnSair);
+        Button btnSair = criarBotaoMenu("Sair", () -> primaryStage.close());
+        menuLateral.getChildren().addAll(btnCadastrarReceita, btnPesquisarReceita, btnEstoque, btnSair);
 
         // ===================== CONTEÚDO CENTRAL (FORMULÁRIO) =====================
         VBox conteudoCentral = new VBox(20);
@@ -52,7 +50,7 @@ public class CadastrarReceita extends Application {
         Label lblTitulo = new Label("Cadastro de Receita");
         lblTitulo.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
 
-        // Cada campo é um VBox com rótulo acima do campo de entrada:
+        // Criação dos campos do formulário com rótulo acima do campo de entrada
         VBox campoPaciente = criarCampo("Nome do Paciente:", new TextField());
         VBox campoCPF = criarCampo("CPF do Paciente:", new TextField());
         VBox campoCRM = criarCampo("CRM do Médico:", new TextField());
@@ -72,6 +70,7 @@ public class CadastrarReceita extends Application {
         VBox formulario = new VBox(15, campoPaciente, campoCPF, campoCRM, campoMedicamento, campoData, buttonBox);
         formulario.setMaxWidth(400);
         formulario.setAlignment(Pos.CENTER_LEFT);
+
         conteudoCentral.getChildren().addAll(lblTitulo, formulario);
 
         // ===================== LOGO NO RODAPÉ (inferior direito) =====================
@@ -93,11 +92,13 @@ public class CadastrarReceita extends Application {
 
         // ===================== AÇÃO DOS BOTÕES DO FORMULÁRIO =====================
         btnCadastrar.setOnAction(e -> {
+            // Recupera os dados dos campos do formulário
             TextField txtPaciente = (TextField) campoPaciente.getChildren().get(1);
             TextField txtCPF = (TextField) campoCPF.getChildren().get(1);
             TextField txtCRM = (TextField) campoCRM.getChildren().get(1);
             TextField txtMedicamento = (TextField) campoMedicamento.getChildren().get(1);
             DatePicker dpData = (DatePicker) campoData.getChildren().get(1);
+
             String paciente = txtPaciente.getText().trim();
             String cpf = txtCPF.getText().trim();
             String crm = txtCRM.getText().trim();
@@ -110,11 +111,13 @@ public class CadastrarReceita extends Application {
                 return;
             }
 
+            // Chama o método do controlador para cadastrar a receita
             receitaController.cadastrarReceita(paciente, cpf, crm, medicamentosEntrada, dataPrescricao);
             Alert alert = new Alert(Alert.AlertType.INFORMATION, "Receita cadastrada com sucesso!", ButtonType.OK);
             alert.showAndWait();
             primaryStage.close();
         });
+
         btnCancelar.setOnAction(e -> primaryStage.close());
 
         // ===================== LAYOUT PRINCIPAL (BorderPane) =====================
@@ -128,12 +131,15 @@ public class CadastrarReceita extends Application {
         primaryStage.show();
     }
 
+    // Método auxiliar para criar um campo de formulário com label acima do campo de entrada
     private VBox criarCampo(String labelText, Control input) {
         Label label = new Label(labelText);
         label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-        return new VBox(5, label, input);
+        VBox vbox = new VBox(5, label, input);
+        return vbox;
     }
 
+    // Método auxiliar para criar um botão no menu lateral com a ação fornecida
     private Button criarBotaoMenu(String texto, Runnable acao) {
         Button btn = new Button(texto);
         btn.setMaxWidth(Double.MAX_VALUE);

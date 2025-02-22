@@ -4,10 +4,14 @@ import dao.ReceitaDAO;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.Receita;
@@ -25,23 +29,71 @@ public class PesquisarReceita extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Pesquisar Receita");
+        primaryStage.setTitle("EasyFarma - Pesquisar Receita");
 
-        // Campos de pesquisa
+        // ===================== MENU LATERAL (verde) =====================
+        VBox menuLateral = new VBox(15);
+        menuLateral.setPadding(new Insets(20));
+        menuLateral.setStyle("-fx-background-color: #2E7D32;");
+        menuLateral.setPrefWidth(180);
+
+        // Cria os botões do menu lateral para navegação
+        Button btnCadastrarReceita = criarBotaoMenu("Cadastrar Receita", () -> {
+            // Em um cenário real, compartilhe a instância do controller
+            new CadastrarReceita(new controller.ReceitaController(new dao.ReceitaDAO(), new dao.EstoqueDAO())).start(new Stage());
+            primaryStage.close();
+        });
+        Button btnPesquisarReceita = criarBotaoMenu("Pesquisar Receita", () -> {
+            // Esta é a tela atual; desabilitamos este botão.
+        });
+        btnPesquisarReceita.setDisable(true);
+        Button btnEstoque = criarBotaoMenu("Estoque", () -> {
+            new VisualizarEstoqueView().start(new Stage());
+            primaryStage.close();
+        });
+        Button btnSair = criarBotaoMenu("Sair", () -> primaryStage.close());
+        menuLateral.getChildren().addAll(btnCadastrarReceita, btnPesquisarReceita, btnEstoque, btnSair);
+
+        // ===================== CONTEÚDO CENTRAL =====================
+        VBox conteudoCentral = new VBox(20);
+        conteudoCentral.setPadding(new Insets(30));
+        conteudoCentral.setAlignment(Pos.TOP_CENTER);
+
+        Label lblTitulo = new Label("Pesquisar Receita");
+        lblTitulo.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+
+        // Filtros de pesquisa
+        GridPane gridFiltros = new GridPane();
+        gridFiltros.setHgap(10);
+        gridFiltros.setVgap(10);
+        gridFiltros.setAlignment(Pos.CENTER);
+
+        Label lblNome = new Label("Nome do Paciente:");
+        lblNome.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
         TextField txtNome = new TextField();
-        txtNome.setPromptText("Nome do Paciente");
-        TextField txtCpf = new TextField();
-        txtCpf.setPromptText("CPF do Paciente");
+        txtNome.setPromptText("Digite o nome");
 
-        // Botões de ação
+        Label lblCpf = new Label("CPF do Paciente:");
+        lblCpf.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        TextField txtCpf = new TextField();
+        txtCpf.setPromptText("Digite o CPF");
+
+        gridFiltros.add(lblNome, 0, 0);
+        gridFiltros.add(txtNome, 1, 0);
+        gridFiltros.add(lblCpf, 0, 1);
+        gridFiltros.add(txtCpf, 1, 1);
+
+        // Botões de ação para pesquisa, exportação e validação
+        HBox boxBotoes = new HBox(15);
+        boxBotoes.setAlignment(Pos.CENTER);
         Button btnPesquisar = new Button("Pesquisar");
         Button btnExportar = new Button("Exportar Receitas");
         Button btnValidar = new Button("Validar Receita");
+        boxBotoes.getChildren().addAll(btnPesquisar, btnExportar, btnValidar);
 
-        // Tabela para exibição das receitas
+        // Tabela de receitas
         table = new TableView<>();
         data = FXCollections.observableArrayList();
-
         TableColumn<Receita, String> colPaciente = new TableColumn<>("Paciente");
         colPaciente.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPaciente()));
         TableColumn<Receita, String> colCpf = new TableColumn<>("CPF");
@@ -52,13 +104,10 @@ public class PesquisarReceita extends Application {
         colData.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDataPrescricao()));
         TableColumn<Receita, String> colStatus = new TableColumn<>("Status");
         colStatus.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getStatus()));
-
         table.getColumns().addAll(colPaciente, colCpf, colMedicamentos, colData, colStatus);
 
-        // Ação do botão "Pesquisar": filtra receitas com base nos campos
         btnPesquisar.setOnAction(e -> pesquisar(txtNome.getText().trim(), txtCpf.getText().trim()));
 
-        // Ação do botão "Exportar Receitas": abre um FileChooser para selecionar o local de salvamento
         btnExportar.setOnAction(e -> {
             Stage stage = (Stage) table.getScene().getWindow();
             FileChooser fileChooser = new FileChooser();
@@ -71,20 +120,40 @@ public class PesquisarReceita extends Application {
             }
         });
 
-        // Ação do botão "Validar Receita": solicita senha do usuário logado para validar a receita selecionada
         btnValidar.setOnAction(e -> validarReceita());
 
-        VBox root = new VBox(10, txtNome, txtCpf, btnPesquisar, btnExportar, btnValidar, table);
-        root.setAlignment(Pos.CENTER);
-        Scene scene = new Scene(root, 600, 500);
+        VBox centerContainer = new VBox(20, lblTitulo, gridFiltros, boxBotoes, table);
+        centerContainer.setAlignment(Pos.TOP_CENTER);
+        conteudoCentral.getChildren().add(centerContainer);
+
+        // ===================== LOGO NO RODAPÉ (inferior direito) =====================
+        ImageView logoView = null;
+        try {
+            Image logo = new Image(getClass().getResourceAsStream("/logo.png"));
+            logoView = new ImageView(logo);
+            logoView.setFitHeight(50);
+            logoView.setPreserveRatio(true);
+        } catch(Exception ex) {
+            System.err.println("Logo não encontrada!");
+        }
+        HBox bottomBar = new HBox();
+        bottomBar.setPadding(new Insets(10));
+        bottomBar.setAlignment(Pos.BOTTOM_RIGHT);
+        if (logoView != null) {
+            bottomBar.getChildren().add(logoView);
+        }
+
+        // ===================== LAYOUT PRINCIPAL (BorderPane) =====================
+        BorderPane root = new BorderPane();
+        root.setLeft(menuLateral);
+        root.setCenter(conteudoCentral);
+        root.setBottom(bottomBar);
+
+        Scene scene = new Scene(root, 900, 600);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    /**
-     * Filtra a lista de receitas com base no nome e CPF.
-     * Para o CPF, é utilizada a verificação por prefixo.
-     */
     private void pesquisar(String nome, String cpf) {
         List<Receita> filtered = receitaDAO.listarReceitas().stream()
                 .filter(r -> (nome.isEmpty() || r.getPaciente().toLowerCase().contains(nome.toLowerCase()))
@@ -94,10 +163,6 @@ public class PesquisarReceita extends Application {
         table.setItems(data);
     }
 
-    /**
-     * Valida a receita selecionada, solicitando a senha do usuário logado.
-     * Se a senha for correta (comparada com Login.senhaLogada), a receita é validada.
-     */
     private void validarReceita() {
         Receita selected = table.getSelectionModel().getSelectedItem();
         if (selected == null) {
@@ -115,20 +180,25 @@ public class PesquisarReceita extends Application {
         dialog.getEditor().setPromptText("Senha");
         dialog.getDialogPane().setPrefWidth(300);
         dialog.showAndWait().ifPresent(senha -> {
-            if (senha.equals(Login.senhaLogada)) {  // Certifique-se de que Login.senhaLogada esteja definido
-                selected.validar();  // Atualiza o status para "Validada"
+            if (senha.equals(Login.senhaLogada)) {
+                selected.validar();
                 receitaDAO.atualizarReceitas();
                 showAlert("Receita validada com sucesso.");
-                pesquisar("", ""); // Atualiza a tabela
+                pesquisar("", "");
             } else {
                 showAlert("Senha incorreta. Receita não validada.");
             }
         });
     }
 
-    /**
-     * Exibe um alerta informativo com a mensagem fornecida.
-     */
+    private Button criarBotaoMenu(String texto, Runnable acao) {
+        Button btn = new Button(texto);
+        btn.setMaxWidth(Double.MAX_VALUE);
+        btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16px;");
+        btn.setOnAction(e -> acao.run());
+        return btn;
+    }
+
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
         alert.showAndWait();

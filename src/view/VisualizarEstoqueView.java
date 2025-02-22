@@ -7,14 +7,11 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import model.Estoque;
 
@@ -22,19 +19,11 @@ import java.util.Map;
 
 public class VisualizarEstoqueView extends Application {
 
-    // Limite para alerta de estoque baixo (exemplo: 10 unidades)
-    private static final int LIMITE_ESTOQUE_BAIXO = 10;
-
-    // Tabela para exibir os dados do estoque
     private TableView<MedicamentoView> tableViewEstoque;
-    // Lista observável que armazena os medicamentos carregados
     private ObservableList<MedicamentoView> medicamentoList;
-    // DAO para manipulação do estoque
     private EstoqueDAO estoqueDAO;
 
-    /**
-     * Classe auxiliar que representa cada medicamento na tabela.
-     */
+    // Classe auxiliar para representar cada medicamento na tabela
     public static class MedicamentoView {
         private final String nome;
         private final int quantidade;
@@ -61,112 +50,145 @@ public class VisualizarEstoqueView extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Visualização de Estoque");
+        primaryStage.setTitle("EasyFarma - Visualizar Estoque");
 
+        // Inicializa o DAO e a lista observável
         estoqueDAO = new EstoqueDAO();
         medicamentoList = FXCollections.observableArrayList();
         tableViewEstoque = new TableView<>();
 
-        // Criação das colunas da TableView
+        // ===================== MENU LATERAL (verde) =====================
+        VBox menuLateral = new VBox(15);
+        menuLateral.setPadding(new Insets(20));
+        menuLateral.setStyle("-fx-background-color: #2E7D32;");
+        menuLateral.setPrefWidth(180);
+
+        Button btnCadastrarReceita = criarBotaoMenu("Cadastrar Receita", () -> {
+            // Para consistência, crie uma instância compartilhada do controller se necessário
+            new CadastrarReceita(new controller.ReceitaController(new dao.ReceitaDAO(), new dao.EstoqueDAO())).start(new Stage());
+            primaryStage.close();
+        });
+        Button btnPesquisarReceita = criarBotaoMenu("Pesquisar Receita", () -> {
+            new PesquisarReceita().start(new Stage());
+            primaryStage.close();
+        });
+        // O botão "Estoque" não é necessário nesta tela – podemos desabilitá-lo
+        Button btnEstoque = criarBotaoMenu("Estoque", () -> {});
+        btnEstoque.setDisable(true);
+        Button btnSair = criarBotaoMenu("Sair", () -> primaryStage.close());
+        menuLateral.getChildren().addAll(btnCadastrarReceita, btnPesquisarReceita, btnEstoque, btnSair);
+
+        // ===================== CONTEÚDO CENTRAL =====================
+        VBox conteudoCentral = new VBox(20);
+        conteudoCentral.setPadding(new Insets(30));
+        conteudoCentral.setAlignment(Pos.TOP_CENTER);
+
+        Label lblTitulo = new Label("Visualizar Estoque");
+        lblTitulo.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+
+        // Campo de pesquisa para medicamentos
+        HBox searchBox = new HBox(10);
+        searchBox.setAlignment(Pos.CENTER);
+        TextField txtPesquisar = new TextField();
+        txtPesquisar.setPromptText("Pesquisar Medicamento");
+        Button btnPesquisarMed = new Button("Buscar");
+        btnPesquisarMed.setOnAction(e -> pesquisarMedicamento(txtPesquisar.getText().trim()));
+        searchBox.getChildren().addAll(new Label("Pesquisar:"), txtPesquisar, btnPesquisarMed);
+
+        // Configuração da TableView
         TableColumn<MedicamentoView, String> colNome = new TableColumn<>("Nome do Medicamento");
         colNome.setMinWidth(200);
         colNome.setCellValueFactory(new PropertyValueFactory<>("nome"));
-
         TableColumn<MedicamentoView, Integer> colQuantidade = new TableColumn<>("Quantidade");
         colQuantidade.setMinWidth(150);
         colQuantidade.setCellValueFactory(new PropertyValueFactory<>("quantidade"));
-
         TableColumn<MedicamentoView, String> colAlerta = new TableColumn<>("Alerta");
         colAlerta.setMinWidth(200);
         colAlerta.setCellValueFactory(new PropertyValueFactory<>("alerta"));
-
         tableViewEstoque.getColumns().addAll(colNome, colQuantidade, colAlerta);
 
-        // Carrega os dados do estoque
         carregarDados();
 
-        // Criação do campo de pesquisa de medicamento
-        TextField txtPesquisar = new TextField();
-        txtPesquisar.setPromptText("Pesquisar Medicamento");
-        Button btnPesquisar = new Button("Pesquisar");
-        btnPesquisar.setOnAction(e -> pesquisarMedicamento(txtPesquisar.getText().trim()));
-
-        HBox pesquisaBox = new HBox(10, new Label("Pesquisar:"), txtPesquisar, btnPesquisar);
-        pesquisaBox.setAlignment(Pos.CENTER);
-        pesquisaBox.setPadding(new Insets(10));
-
-        // Área para adicionar novos medicamentos
-        TextField txtNomeMedicamento = new TextField();
-        txtNomeMedicamento.setPromptText("Nome do Medicamento");
-
+        // Formulário para adicionar um novo medicamento
+        HBox addBox = new HBox(10);
+        addBox.setAlignment(Pos.CENTER);
+        TextField txtNomeMed = new TextField();
+        txtNomeMed.setPromptText("Nome do Medicamento");
         TextField txtQuantidade = new TextField();
         txtQuantidade.setPromptText("Quantidade");
-
         Button btnAdicionar = new Button("Adicionar Medicamento");
         btnAdicionar.setOnAction(e -> {
-            String nome = txtNomeMedicamento.getText().trim();
-            String quantidadeStr = txtQuantidade.getText().trim();
-
-            if (nome.isEmpty() || quantidadeStr.isEmpty()) {
-                System.out.println("Informe o nome e a quantidade.");
+            String nome = txtNomeMed.getText().trim();
+            String qtdStr = txtQuantidade.getText().trim();
+            if (nome.isEmpty() || qtdStr.isEmpty()) {
+                showAlert("Informe o nome e a quantidade.");
                 return;
             }
-
             try {
-                int quantidade = Integer.parseInt(quantidadeStr);
+                int quantidade = Integer.parseInt(qtdStr);
                 if (quantidade <= 0) {
-                    System.out.println("A quantidade deve ser maior que zero.");
+                    showAlert("A quantidade deve ser maior que zero.");
                     return;
                 }
-                // Adiciona o medicamento ao estoque
+                // Adiciona medicamento ao estoque e recarrega os dados
                 estoqueDAO.adicionarMedicamento(nome, quantidade);
-                // Recarrega os dados para atualizar a tabela
                 carregarDados();
-                txtNomeMedicamento.clear();
+                txtNomeMed.clear();
                 txtQuantidade.clear();
             } catch (NumberFormatException ex) {
-                System.out.println("Quantidade inválida. Informe um número.");
+                showAlert("Quantidade inválida. Informe um número.");
             }
         });
+        addBox.getChildren().addAll(txtNomeMed, txtQuantidade, btnAdicionar);
 
-        HBox addBox = new HBox(10, txtNomeMedicamento, txtQuantidade, btnAdicionar);
-        addBox.setAlignment(Pos.CENTER);
-        addBox.setPadding(new Insets(10));
+        VBox centerContainer = new VBox(20, lblTitulo, searchBox, tableViewEstoque, addBox);
+        centerContainer.setAlignment(Pos.TOP_CENTER);
+        conteudoCentral.getChildren().add(centerContainer);
 
-        // Layout principal: campo de pesquisa, tabela e área de adição
-        VBox layout = new VBox(10, pesquisaBox, tableViewEstoque, addBox);
-        layout.setAlignment(Pos.TOP_CENTER);
-        layout.setPadding(new Insets(10));
+        // ===================== LOGO NO RODAPÉ (inferior direito) =====================
+        ImageView logoView = null;
+        try {
+            Image logo = new Image(getClass().getResourceAsStream("/logo.png"));
+            logoView = new ImageView(logo);
+            logoView.setFitHeight(50);
+            logoView.setPreserveRatio(true);
+        } catch(Exception ex) {
+            System.err.println("Logo não encontrada!");
+        }
+        HBox bottomBar = new HBox();
+        bottomBar.setPadding(new Insets(10));
+        bottomBar.setAlignment(Pos.BOTTOM_RIGHT);
+        if (logoView != null) {
+            bottomBar.getChildren().add(logoView);
+        }
 
-        Scene scene = new Scene(layout, 600, 500);
+        // ===================== LAYOUT PRINCIPAL (BorderPane) =====================
+        BorderPane root = new BorderPane();
+        root.setLeft(menuLateral);
+        root.setCenter(conteudoCentral);
+        root.setBottom(bottomBar);
+
+        Scene scene = new Scene(root, 900, 600);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    /**
-     * Carrega os dados do estoque utilizando o EstoqueDAO e popula a lista observável.
-     */
+    // Carrega os dados do estoque na tabela
     private void carregarDados() {
         medicamentoList.clear();
-        Estoque estoque = estoqueDAO.getEstoque();
-        Map<String, Integer> medicamentos = estoque.getMedicamentos();
+        Map<String, Integer> medicamentos = estoqueDAO.getEstoque().getMedicamentos();
         for (Map.Entry<String, Integer> entry : medicamentos.entrySet()) {
             String nome = entry.getKey();
             int quantidade = entry.getValue();
-            String alerta = quantidade < LIMITE_ESTOQUE_BAIXO ? "Estoque Baixo" : "";
+            String alerta = quantidade < 10 ? "Estoque Baixo" : "";
             medicamentoList.add(new MedicamentoView(nome, quantidade, alerta));
         }
         tableViewEstoque.setItems(medicamentoList);
     }
 
-    /**
-     * Filtra os medicamentos da tabela com base no nome informado.
-     *
-     * @param filtro Texto a ser pesquisado no nome do medicamento.
-     */
+    // Pesquisa medicamentos pelo nome (caso o campo esteja vazio, exibe todos)
     private void pesquisarMedicamento(String filtro) {
         if (filtro.isEmpty()) {
-            // Se o campo de pesquisa estiver vazio, exibe todos os medicamentos
             tableViewEstoque.setItems(medicamentoList);
         } else {
             ObservableList<MedicamentoView> filtrado = FXCollections.observableArrayList();
@@ -179,7 +201,21 @@ public class VisualizarEstoqueView extends Application {
         }
     }
 
-    // Método main para testar a tela de forma independente
+    // Cria um botão para o menu lateral com ação
+    private Button criarBotaoMenu(String texto, Runnable acao) {
+        Button btn = new Button(texto);
+        btn.setMaxWidth(Double.MAX_VALUE);
+        btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16px;");
+        btn.setOnAction(e -> acao.run());
+        return btn;
+    }
+
+    // Exibe um alerta informativo
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
+        alert.showAndWait();
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
